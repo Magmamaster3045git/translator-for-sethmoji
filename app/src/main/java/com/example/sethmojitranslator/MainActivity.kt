@@ -15,13 +15,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            SethmojiTranslatorApp()
+            SethmojiApp()
         }
     }
 }
 
 @Composable
-fun SethmojiTranslatorApp() {
+fun SethmojiApp() {
+
+    var currentScreen by remember { mutableStateOf("home") }
 
     MaterialTheme {
 
@@ -29,13 +31,29 @@ fun SethmojiTranslatorApp() {
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            HomeScreen()
+
+            when (currentScreen) {
+
+                "home" -> HomeScreen(
+                    onOpenDictionary = {
+                        currentScreen = "dictionary"
+                    }
+                )
+
+                "dictionary" -> DictionaryScreen(
+                    onBack = {
+                        currentScreen = "home"
+                    }
+                )
+            }
         }
     }
 }
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    onOpenDictionary: () -> Unit
+) {
 
     var englishText by remember { mutableStateOf("") }
     var emojiText by remember { mutableStateOf("") }
@@ -57,9 +75,7 @@ fun HomeScreen() {
 
         OutlinedTextField(
             value = englishText,
-            onValueChange = {
-                englishText = it
-            },
+            onValueChange = { englishText = it },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("English") }
         )
@@ -68,9 +84,7 @@ fun HomeScreen() {
 
         OutlinedTextField(
             value = emojiText,
-            onValueChange = {
-                emojiText = it
-            },
+            onValueChange = { emojiText = it },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Emoji") }
         )
@@ -83,21 +97,16 @@ fun HomeScreen() {
 
                 result = when {
 
-                    englishText.isNotBlank() -> {
+                    englishText.isNotBlank() ->
                         SethmojiDictionary.englishToEmoji(englishText)
                             ?: "No translation found"
-                    }
 
-                    emojiText.isNotBlank() -> {
+                    emojiText.isNotBlank() ->
                         SethmojiDictionary.emojiToEnglish(emojiText)
                             ?: "No translation found"
-                    }
 
-                    else -> {
-                        "Enter something first"
-                    }
+                    else -> "Enter something first"
                 }
-
             }
         ) {
             Text("Translate")
@@ -105,25 +114,17 @@ fun HomeScreen() {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Text(
-            text = "Result",
-            style = MaterialTheme.typography.titleMedium
-        )
+        Text("Result", style = MaterialTheme.typography.titleMedium)
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            text = result,
-            style = MaterialTheme.typography.bodyLarge
-        )
+        Text(result)
 
         Spacer(modifier = Modifier.height(30.dp))
 
         Button(
             modifier = Modifier.fillMaxWidth(),
-            onClick = {
-                // Dictionary screen later
-            }
+            onClick = onOpenDictionary
         ) {
             Text("Dictionary")
         }
