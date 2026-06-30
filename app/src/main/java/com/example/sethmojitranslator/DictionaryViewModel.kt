@@ -1,16 +1,15 @@
 package com.example.sethmojitranslator
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class DictionaryViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val dao = AppDatabase.getDatabase(application).dictionaryDao()
+class DictionaryViewModel(
+    private val dao: DictionaryDao
+) : ViewModel() {
 
     private val _entries = MutableStateFlow<List<DictionaryEntity>>(emptyList())
     val entries: StateFlow<List<DictionaryEntity>> = _entries
@@ -19,7 +18,7 @@ class DictionaryViewModel(application: Application) : AndroidViewModel(applicati
         load()
     }
 
-    fun load() {
+    private fun load() {
         viewModelScope.launch(Dispatchers.IO) {
             _entries.value = dao.getAll()
         }
