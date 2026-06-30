@@ -1,45 +1,14 @@
-package com.example.sethmojitranslator
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-
 @Composable
 fun DictionaryScreen(
+    viewModel: DictionaryViewModel,
     onBack: () -> Unit
 ) {
 
-    val db = AppDatabase.getDatabase(androidx.compose.ui.platform.LocalContext.current)
-    val dao = db.dictionaryDao()
-
-    val scope = rememberCoroutineScope()
-
-    var entries by remember { mutableStateOf(listOf<DictionaryEntity>()) }
+    val entries by viewModel.entries.collectAsState()
 
     var english by remember { mutableStateOf("") }
     var emoji by remember { mutableStateOf("") }
-
     var editingId by remember { mutableStateOf<Int?>(null) }
-
-    // Load data
-    LaunchedEffect(true) {
-        withContext(Dispatchers.IO) {
-            entries = dao.getAll()
-        }
-    }
-
-    fun refresh() {
-        scope.launch(Dispatchers.IO) {
-            entries = dao.getAll()
-        }
-    }
 
     Column(
         modifier = Modifier
@@ -47,10 +16,7 @@ fun DictionaryScreen(
             .padding(16.dp)
     ) {
 
-        Text(
-            text = "Dictionary Editor",
-            style = MaterialTheme.typography.headlineMedium
-        )
+        Text("Dictionary Editor", style = MaterialTheme.typography.headlineMedium)
 
         Spacer(modifier = Modifier.height(10.dp))
 
@@ -76,31 +42,23 @@ fun DictionaryScreen(
             modifier = Modifier.fillMaxWidth(),
             onClick = {
 
-                scope.launch(Dispatchers.IO) {
-
-                    if (editingId == null) {
-                        dao.insert(
-                            DictionaryEntity(
-                                english = english,
-                                emoji = emoji
-                            )
+                if (editingId == null) {
+                    viewModel.add(
+                        DictionaryEntity(english = english, emoji = emoji)
+                    )
+                } else {
+                    viewModel.update(
+                        DictionaryEntity(
+                            id = editingId!!,
+                            english = english,
+                            emoji = emoji
                         )
-                    } else {
-                        dao.update(
-                            DictionaryEntity(
-                                id = editingId!!,
-                                english = english,
-                                emoji = emoji
-                            )
-                        )
-                    }
-
-                    english = ""
-                    emoji = ""
-                    editingId = null
-
-                    entries = dao.getAll()
+                    )
                 }
+
+                english = ""
+                emoji = ""
+                editingId = null
             }
         ) {
             Text(if (editingId == null) "Add" else "Update")
@@ -108,7 +66,7 @@ fun DictionaryScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        LazyColumn(
+        androidx.compose.foundation.lazy.LazyColumn(
             modifier = Modifier.weight(1f)
         ) {
 
@@ -117,7 +75,7 @@ fun DictionaryScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 6.dp)
+                        .padding(6.dp)
                 ) {
 
                     Row(
@@ -145,12 +103,7 @@ fun DictionaryScreen(
                             Spacer(modifier = Modifier.width(6.dp))
 
                             Button(onClick = {
-
-                                scope.launch(Dispatchers.IO) {
-                                    dao.delete(item)
-                                    entries = dao.getAll()
-                                }
-
+                                viewModel.delete(item)
                             }) {
                                 Text("Delete")
                             }
