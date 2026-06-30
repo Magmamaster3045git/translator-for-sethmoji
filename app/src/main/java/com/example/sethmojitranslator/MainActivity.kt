@@ -7,11 +7,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -21,10 +23,28 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/* ---------------- VIEWMODEL FACTORY (IMPORTANT FOR ROOM) ---------------- */
+
+class DictionaryViewModelFactory(
+    private val dao: DictionaryDao
+) : ViewModelProvider.Factory {
+
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return DictionaryViewModel(dao) as T
+    }
+}
+
+/* ---------------- ROOT APP ---------------- */
+
 @Composable
 fun SethmojiApp() {
 
-    val viewModel: DictionaryViewModel = viewModel()
+    val context = LocalContext.current
+    val dao = AppDatabase.getDatabase(context).dictionaryDao()
+
+    val viewModel: DictionaryViewModel = viewModel(
+        factory = DictionaryViewModelFactory(dao)
+    )
 
     var currentScreen by remember { mutableStateOf("home") }
 
