@@ -15,11 +15,19 @@ class DictionaryViewModel(
     val entries: StateFlow<List<DictionaryEntity>> = _entries
 
     init {
-        load()
-    }
-
-    private fun load() {
         viewModelScope.launch(Dispatchers.IO) {
+
+            // Load existing data
+            val existing = dao.getAll()
+
+            // If empty → seed default dictionary
+            if (existing.isEmpty()) {
+                DictionarySeeder.defaultData().forEach {
+                    dao.insert(it)
+                }
+            }
+
+            // Load final data into UI state
             _entries.value = dao.getAll()
         }
     }
@@ -27,21 +35,21 @@ class DictionaryViewModel(
     fun add(entry: DictionaryEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             dao.insert(entry)
-            load()
+            _entries.value = dao.getAll()
         }
     }
 
     fun update(entry: DictionaryEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             dao.update(entry)
-            load()
+            _entries.value = dao.getAll()
         }
     }
 
     fun delete(entry: DictionaryEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             dao.delete(entry)
-            load()
+            _entries.value = dao.getAll()
         }
     }
 }
