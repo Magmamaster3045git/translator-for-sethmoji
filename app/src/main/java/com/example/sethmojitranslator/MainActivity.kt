@@ -3,18 +3,8 @@ package com.example.sethmojitranslator
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -39,13 +29,9 @@ fun SethmojiTranslatorApp() {
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-
             HomeScreen()
-
         }
-
     }
-
 }
 
 @Composable
@@ -59,9 +45,7 @@ fun HomeScreen() {
         modifier = Modifier
             .fillMaxSize()
             .padding(20.dp),
-
         verticalArrangement = Arrangement.Top
-
     ) {
 
         Text(
@@ -77,9 +61,7 @@ fun HomeScreen() {
                 englishText = it
             },
             modifier = Modifier.fillMaxWidth(),
-            label = {
-                Text("English")
-            }
+            label = { Text("English") }
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -90,9 +72,7 @@ fun HomeScreen() {
                 emojiText = it
             },
             modifier = Modifier.fillMaxWidth(),
-            label = {
-                Text("Emoji")
-            }
+            label = { Text("Emoji") }
         )
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -101,20 +81,26 @@ fun HomeScreen() {
             modifier = Modifier.fillMaxWidth(),
             onClick = {
 
-                result =
-                    if (englishText.isNotBlank()) {
-                        "Translation coming soon..."
-                    } else if (emojiText.isNotBlank()) {
-                        "Reverse translation coming soon..."
-                    } else {
-                        "Enter some text first."
+                result = when {
+
+                    englishText.isNotBlank() -> {
+                        SethmojiDictionary.englishToEmoji(englishText)
+                            ?: "No translation found"
                     }
+
+                    emojiText.isNotBlank() -> {
+                        SethmojiDictionary.emojiToEnglish(emojiText)
+                            ?: "No translation found"
+                    }
+
+                    else -> {
+                        "Enter something first"
+                    }
+                }
 
             }
         ) {
-
             Text("Translate")
-
         }
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -136,16 +122,10 @@ fun HomeScreen() {
         Button(
             modifier = Modifier.fillMaxWidth(),
             onClick = {
-
-                // Dictionary screen will be added later
-
+                // Dictionary screen later
             }
         ) {
-
             Text("Dictionary")
-
         }
-
     }
-
 }
