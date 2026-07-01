@@ -13,7 +13,6 @@ fun DictionaryScreen(
     viewModel: DictionaryViewModel,
     onBack: () -> Unit
 ) {
-
     var english by remember { mutableStateOf("") }
     var emoji by remember { mutableStateOf("") }
 
@@ -32,9 +31,11 @@ fun DictionaryScreen(
         OutlinedTextField(
             value = english,
             onValueChange = { english = it },
-            label = { Text("English word") },
+            label = { Text("English") },
             modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
             value = emoji,
@@ -43,12 +44,19 @@ fun DictionaryScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Button(onClick = {
-            viewModel.addEntry(english, emoji)
-            english = ""
-            emoji = ""
-        }) {
-            Text("Add")
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = {
+                if (english.isNotBlank() && emoji.isNotBlank()) {
+                    viewModel.addEntry(english, emoji)
+                    english = ""
+                    emoji = ""
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Add Translation")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -59,17 +67,23 @@ fun DictionaryScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(4.dp)
+                        .padding(vertical = 4.dp)
                 ) {
+
                     Row(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
+
                         Text("${item.english} → ${item.emoji}")
 
-                        Button(onClick = {
-                            viewModel.deleteEntry(item.id)
-                        }) {
+                        Button(
+                            onClick = {
+                                viewModel.deleteEntry(item)
+                            }
+                        ) {
                             Text("Delete")
                         }
                     }
