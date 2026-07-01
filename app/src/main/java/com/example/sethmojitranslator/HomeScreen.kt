@@ -14,6 +14,8 @@ fun HomeScreen(
     var input by remember { mutableStateOf("") }
     var output by remember { mutableStateOf("") }
 
+    val entries = viewModel.entries
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -30,45 +32,29 @@ fun HomeScreen(
         OutlinedTextField(
             value = input,
             onValueChange = { text ->
+
                 input = text
 
-                val tokens = text.split(" ")
+                val words = text.split(" ")
 
-                val translated = tokens.map { token ->
+                val translated = words.joinToString(" ") { word ->
 
-                    val match = Regex("([A-Za-zÀ-ÿ]+|[\\p{Emoji_Presentation}\\p{Extended_Pictographic}]+)([^A-Za-zÀ-ÿ\\p{Emoji_Presentation}\\p{Extended_Pictographic}]*)")
-                        .find(token)
-
-                    if (match != null) {
-                        val word = match.groupValues[1]
-                        val punctuation = match.groupValues[2]
-
-                        val emojiToEnglish = viewModel.translateEmoji(word)
-
-                        val translatedWord =
-                            if (emojiToEnglish != word) {
-                                emojiToEnglish
-                            } else {
-                                SethmojiDictionary.englishToEmoji(word) ?: word
-                            }
-
-                        translatedWord + punctuation
-                    } else {
-                        token
+                    val match = entries.find {
+                        it.english.equals(word, ignoreCase = true)
                     }
+
+                    match?.emoji ?: word
                 }
 
-                output = translated.joinToString(" ")
+                output = translated
             },
-            label = { Text("Type English or Emoji") },
+            label = { Text("Type English words") },
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Card(
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        Card(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = output,
                 modifier = Modifier.padding(16.dp),
