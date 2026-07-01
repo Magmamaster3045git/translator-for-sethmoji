@@ -29,20 +29,24 @@ fun HomeScreen(
 
         OutlinedTextField(
             value = input,
-            onValueChange = {
-                input = it
+            onValueChange = { text ->
+                input = text
 
-                // Try English → Emoji first
-                val emoji = SethmojiDictionary.englishToEmoji(it)
+                val words = text.split(" ")
 
-                // If not found, try Emoji → English via ViewModel
-                val english = viewModel.translateEmoji(it)
+                val translated = words.map { word ->
 
-                output = when {
-                    emoji != null -> emoji
-                    english != it -> english
-                    else -> it
+                    // Emoji → English first
+                    val emojiToEnglish = viewModel.translateEmoji(word)
+                    if (emojiToEnglish != word) {
+                        emojiToEnglish
+                    } else {
+                        // English → Emoji
+                        SethmojiDictionary.englishToEmoji(word) ?: word
+                    }
                 }
+
+                output = translated.joinToString(" ")
             },
             label = { Text("Type English or Emoji") },
             modifier = Modifier.fillMaxWidth()
