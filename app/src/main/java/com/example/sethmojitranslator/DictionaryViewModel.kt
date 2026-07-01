@@ -1,55 +1,42 @@
 package com.example.sethmojitranslator
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 
-class DictionaryViewModel(
-    private val dao: DictionaryDao
-) : ViewModel() {
+data class DictionaryEntry(
+    val id: Int,
+    var english: String,
+    var emoji: String
+)
 
-    private val _entries = MutableStateFlow<List<DictionaryEntity>>(emptyList())
-    val entries: StateFlow<List<DictionaryEntity>> = _entries
+class DictionaryViewModel : ViewModel() {
+
+    private val _entries = mutableStateListOf<DictionaryEntry>()
+    val entries: List<DictionaryEntry> = _entries
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
-
-            // Load existing data
-            val existing = dao.getAll()
-
-            // If empty → seed default dictionary
-            if (existing.isEmpty()) {
-                DictionarySeeder.defaultData().forEach {
-                    dao.insert(it)
-                }
-            }
-
-            // Load final data into UI state
-            _entries.value = dao.getAll()
-        }
+        _entries.addAll(
+            listOf(
+                DictionaryEntry(1, "Hello", "👋"),
+                DictionaryEntry(2, "Love", "💛"),
+                DictionaryEntry(3, "Yes", "👍🏿"),
+                DictionaryEntry(4, "No", "👎🏼")
+            )
+        )
     }
 
-    fun add(entry: DictionaryEntity) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dao.insert(entry)
-            _entries.value = dao.getAll()
-        }
+    fun addEntry(english: String, emoji: String) {
+        val newId = (_entries.maxOfOrNull { it.id } ?: 0) + 1
+        _entries.add(DictionaryEntry(newId, english, emoji))
     }
 
-    fun update(entry: DictionaryEntity) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dao.update(entry)
-            _entries.value = dao.getAll()
-        }
+    fun deleteEntry(id: Int) {
+        _entries.removeAll { it.id == id }
     }
 
-    fun delete(entry: DictionaryEntity) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dao.delete(entry)
-            _entries.value = dao.getAll()
-        }
+    fun translate(word: String): String {
+        return _entries.find {
+            it.english.equals(word, ignoreCase = true)
+        }?.emoji ?: word
     }
-}
+} 
