@@ -5,6 +5,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 
 @Composable
 fun HomeScreen(
@@ -14,7 +16,21 @@ fun HomeScreen(
     var input by remember { mutableStateOf("") }
     var output by remember { mutableStateOf("") }
 
-    val entries = viewModel.entries
+    val clipboard = LocalClipboardManager.current
+
+    fun translateText(text: String): String {
+        // Split but keep punctuation attached
+        return text.split(" ").joinToString(" ") { word ->
+            val cleanWord = word.replace(Regex("[^\\p{L}\\p{N}]"), "") // remove punctuation for lookup
+            val prefix = word.takeWhile { !it.isLetterOrDigit() }
+            val suffix = word.takeLastWhile { !it.isLetterOrDigit() }
+
+            val emoji = SethmojiDictionary.englishToEmoji(cleanWord)
+            val translated = emoji ?: viewModel.translate(cleanWord)
+
+            prefix + translated + suffix
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -31,49 +47,35 @@ fun HomeScreen(
 
         OutlinedTextField(
             value = input,
-            onValueChange = { text ->
-
-                input = text
-
-                val words = text.split(" ")
-
-                val translated = words.joinToString(" ") { word ->
-
-                    val match = entries.find {
-                        it.english.equals(word, ignoreCase = true)
-                    }
-
-                    match?.emoji ?: word
-                }
-
-                output = translated
+            onValueChange = {
+                input = it
+                output = translateText(it)
             },
-            label = { Text("Type English words") },
+            label = { Text("Type English or Emoji") },
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(16.dp)) {
 
-            Text(
-                text = output,
-                style = MaterialTheme.typography.headlineSmall
-            )
+                Text(
+                    text = output,
+                    style = MaterialTheme.typography.headlineSmall
+                )
 
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-            Button(onClick = {
-                // copy to clipboard
-                val clipboard = androidx.compose.ui.platform.LocalClipboardManager.current
-                val clip = androidx.compose.ui.text.AnnotatedString(output)
-                clipboard.setText(clip)
-            }) {
-                Text("Copy")
+                Button(
+                    onClick = {
+                        clipboard.setText(AnnotatedString(output))
+                    }
+                ) {
+                    Text("Copy")
+                }
             }
-        } 
-    } 
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -81,4 +83,4 @@ fun HomeScreen(
             Text("Open Dictionary Editor")
         }
     }
-}
+} 
