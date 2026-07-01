@@ -32,17 +32,29 @@ fun HomeScreen(
             onValueChange = { text ->
                 input = text
 
-                val words = text.split(" ")
+                val tokens = text.split(" ")
 
-                val translated = words.map { word ->
+                val translated = tokens.map { token ->
 
-                    // Emoji → English first
-                    val emojiToEnglish = viewModel.translateEmoji(word)
-                    if (emojiToEnglish != word) {
-                        emojiToEnglish
+                    val match = Regex("([A-Za-zÀ-ÿ]+|[\\p{Emoji_Presentation}\\p{Extended_Pictographic}]+)([^A-Za-zÀ-ÿ\\p{Emoji_Presentation}\\p{Extended_Pictographic}]*)")
+                        .find(token)
+
+                    if (match != null) {
+                        val word = match.groupValues[1]
+                        val punctuation = match.groupValues[2]
+
+                        val emojiToEnglish = viewModel.translateEmoji(word)
+
+                        val translatedWord =
+                            if (emojiToEnglish != word) {
+                                emojiToEnglish
+                            } else {
+                                SethmojiDictionary.englishToEmoji(word) ?: word
+                            }
+
+                        translatedWord + punctuation
                     } else {
-                        // English → Emoji
-                        SethmojiDictionary.englishToEmoji(word) ?: word
+                        token
                     }
                 }
 
