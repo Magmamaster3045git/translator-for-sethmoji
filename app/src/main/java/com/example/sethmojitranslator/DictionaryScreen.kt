@@ -13,17 +13,15 @@ fun DictionaryScreen(
     viewModel: DictionaryViewModel,
     onBack: () -> Unit
 ) {
-    val entries by viewModel.entries.collectAsState()
 
     var english by remember { mutableStateOf("") }
     var emoji by remember { mutableStateOf("") }
-    var editingId by remember { mutableStateOf<Int?>(null) }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-
-        Text(text = "Dictionary", style = MaterialTheme.typography.headlineMedium)
-
-        Spacer(modifier = Modifier.height(12.dp))
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
 
         Button(onClick = onBack) {
             Text("Back")
@@ -31,15 +29,12 @@ fun DictionaryScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // INPUT FIELDS
         OutlinedTextField(
             value = english,
             onValueChange = { english = it },
             label = { Text("English word") },
             modifier = Modifier.fillMaxWidth()
         )
-
-        Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
             value = emoji,
@@ -48,80 +43,34 @@ fun DictionaryScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Button(
-            onClick = {
-                if (english.isNotBlank() && emoji.isNotBlank()) {
-
-                    if (editingId == null) {
-                        viewModel.add(
-                            DictionaryEntity(
-                                english = english,
-                                emoji = emoji
-                            )
-                        )
-                    } else {
-                        viewModel.update(
-                            DictionaryEntity(
-                                id = editingId!!,
-                                english = english,
-                                emoji = emoji
-                            )
-                        )
-                        editingId = null
-                    }
-
-                    english = ""
-                    emoji = ""
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(if (editingId == null) "Add" else "Update")
+        Button(onClick = {
+            viewModel.addEntry(english, emoji)
+            english = ""
+            emoji = ""
+        }) {
+            Text("Add")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // LIST
         LazyColumn {
-            items(entries) { item ->
+            items(viewModel.entries) { item ->
 
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 6.dp)
+                        .padding(4.dp)
                 ) {
-
                     Row(
-                        modifier = Modifier
-                            .padding(12.dp)
-                            .fillMaxWidth(),
+                        modifier = Modifier.padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
+                        Text("${item.english} → ${item.emoji}")
 
-                        Column {
-                            Text(text = item.english)
-                            Text(text = item.emoji, style = MaterialTheme.typography.headlineMedium)
-                        }
-
-                        Row {
-
-                            Button(onClick = {
-                                english = item.english
-                                emoji = item.emoji
-                                editingId = item.id
-                            }) {
-                                Text("Edit")
-                            }
-
-                            Spacer(modifier = Modifier.width(8.dp))
-
-                            Button(onClick = {
-                                viewModel.delete(item)
-                            }) {
-                                Text("Delete")
-                            }
+                        Button(onClick = {
+                            viewModel.deleteEntry(item.id)
+                        }) {
+                            Text("Delete")
                         }
                     }
                 }
