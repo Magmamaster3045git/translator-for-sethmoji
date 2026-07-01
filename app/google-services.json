@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1021900788977",
+    "project_id": "sethmojitranslator",
+    "storage_bucket": "sethmojitranslator.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1021900788977:android:beb2a287517c772a504550",
+        "android_client_info": {
+          "package_name": "com.example.sethmojitranslator"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdb_HUwHqFxJbkoZxJfWFn_-zWvnl6XZ4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
