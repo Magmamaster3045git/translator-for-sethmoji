@@ -30,4 +30,10 @@ class DictionaryViewModel : ViewModel() {
             it.english.equals(word, ignoreCase = true)
         }?.emoji ?: word
     }
+
+    fun translateEmoji(emoji: String): String {
+        return _entries.find {
+            it.emoji == emoji.trim()
+        }?.english ?: emoji
+    }
 }
