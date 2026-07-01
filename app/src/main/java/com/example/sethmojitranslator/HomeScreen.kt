@@ -55,12 +55,25 @@ fun HomeScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp)) {
+
             Text(
                 text = output,
-                modifier = Modifier.padding(16.dp),
                 style = MaterialTheme.typography.headlineSmall
             )
-        }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(onClick = {
+                // copy to clipboard
+                val clipboard = androidx.compose.ui.platform.LocalClipboardManager.current
+                val clip = androidx.compose.ui.text.AnnotatedString(output)
+                clipboard.setText(clip)
+            }) {
+                Text("Copy")
+            }
+        } 
+    } 
 
         Spacer(modifier = Modifier.height(16.dp))
 
