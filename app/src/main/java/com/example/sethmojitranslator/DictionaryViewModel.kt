@@ -15,6 +15,7 @@ data class DictionaryEntry(
 class DictionaryViewModel : ViewModel() {
 
     private val db = FirebaseFirestore.getInstance()
+
     private val _entries = MutableStateFlow<List<DictionaryEntry>>(emptyList())
     val entries: StateFlow<List<DictionaryEntry>> = _entries
 
@@ -29,15 +30,13 @@ class DictionaryViewModel : ViewModel() {
             .addSnapshotListener { snapshot, _ ->
                 if (snapshot == null) return@addSnapshotListener
 
-                val list = snapshot.documents.map { doc ->
+                _entries.value = snapshot.documents.map { doc ->
                     DictionaryEntry(
                         id = doc.id,
                         english = doc.getString("english") ?: "",
                         emoji = doc.getString("emoji") ?: ""
                     )
                 }
-
-                _entries.value = list
             }
     }
 
@@ -47,8 +46,7 @@ class DictionaryViewModel : ViewModel() {
             "emoji" to emoji
         )
 
-        db.collection("dictionary")
-            .add(data)
+        db.collection("dictionary").add(data)
     }
 
     fun deleteEntry(id: String) {
@@ -58,9 +56,11 @@ class DictionaryViewModel : ViewModel() {
     }
 
     fun translate(word: String): String {
+        val clean = word.trim()
+
         return _entries.value.find {
-            it.english.equals(word, ignoreCase = true)
-        }?.emoji ?: word
+            it.english.equals(clean, ignoreCase = true)
+        }?.emoji ?: clean
     }
 
     override fun onCleared() {
