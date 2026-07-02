@@ -22,10 +22,10 @@ class DictionaryViewModel : ViewModel() {
     private var listener: ListenerRegistration? = null
 
     init {
-        listenToDictionary()
+        listen()
     }
 
-    private fun listenToDictionary() {
+    private fun listen() {
         listener = db.collection("dictionary")
             .addSnapshotListener { snapshot, _ ->
                 if (snapshot == null) return@addSnapshotListener
@@ -50,21 +50,16 @@ class DictionaryViewModel : ViewModel() {
     }
 
     fun deleteEntry(id: String) {
-        db.collection("dictionary")
-            .document(id)
-            .delete()
+        db.collection("dictionary").document(id).delete()
     }
 
     fun translate(word: String): String {
-        val clean = word.trim()
-
         return _entries.value.find {
-            it.english.equals(clean, ignoreCase = true)
-        }?.emoji ?: clean
+            it.english.equals(word.trim(), ignoreCase = true)
+        }?.emoji ?: word
     }
 
     override fun onCleared() {
         listener?.remove()
-        super.onCleared()
     }
-}
+} 
