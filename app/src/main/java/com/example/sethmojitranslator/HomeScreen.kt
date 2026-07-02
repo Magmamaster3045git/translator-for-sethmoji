@@ -1,23 +1,25 @@
 package com.example.sethmojitranslator
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun DictionaryScreen(
+fun HomeScreen(
     viewModel: DictionaryViewModel,
-    onBack: () -> Unit
+    onOpenDictionary: () -> Unit
 ) {
+    var input by remember { mutableStateOf("") }
+    var output by remember { mutableStateOf("") }
 
-    val entries by viewModel.entries.collectAsState()
-
-    var english by remember { mutableStateOf("") }
-    var emoji by remember { mutableStateOf("") }
+    fun translate(text: String): String {
+        return text.split(" ").joinToString(" ") { word ->
+            viewModel.translate(word)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -25,58 +27,38 @@ fun DictionaryScreen(
             .padding(16.dp)
     ) {
 
-        Button(onClick = onBack) {
-            Text("Back")
-        }
+        Text(
+            text = "Sethmoji Translator",
+            style = MaterialTheme.typography.headlineMedium
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
-            value = english,
-            onValueChange = { english = it },
-            label = { Text("English word") },
+            value = input,
+            onValueChange = {
+                input = it
+                output = translate(it)
+            },
+            label = { Text("Type text") },
             modifier = Modifier.fillMaxWidth()
         )
 
-        OutlinedTextField(
-            value = emoji,
-            onValueChange = { emoji = it },
-            label = { Text("Emoji") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = {
-            viewModel.addEntry(english, emoji)
-            english = ""
-            emoji = ""
-        }) {
-            Text("Add")
+        Card(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = output,
+                modifier = Modifier.padding(16.dp)
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        LazyColumn {
-            items(entries) { item ->
-
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("${item.english} → ${item.emoji}")
-
-                        Button(onClick = {
-                            viewModel.deleteEntry(item.id)
-                        }) {
-                            Text("Delete")
-                        }
-                    }
-                }
-            }
+        Button(onClick = onOpenDictionary) {
+            Text("Open Dictionary")
         }
     }
-}
+} 
