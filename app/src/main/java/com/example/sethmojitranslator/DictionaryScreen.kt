@@ -13,6 +13,9 @@ fun DictionaryScreen(
     viewModel: DictionaryViewModel,
     onBack: () -> Unit
 ) {
+
+    val entries by viewModel.entries.collectAsState()
+
     var english by remember { mutableStateOf("") }
     var emoji by remember { mutableStateOf("") }
 
@@ -31,11 +34,9 @@ fun DictionaryScreen(
         OutlinedTextField(
             value = english,
             onValueChange = { english = it },
-            label = { Text("English") },
+            label = { Text("English word") },
             modifier = Modifier.fillMaxWidth()
         )
-
-        Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
             value = emoji,
@@ -44,46 +45,33 @@ fun DictionaryScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Button(
-            onClick = {
-                if (english.isNotBlank() && emoji.isNotBlank()) {
-                    viewModel.addEntry(english, emoji)
-                    english = ""
-                    emoji = ""
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Add Translation")
+        Button(onClick = {
+            viewModel.addEntry(english, emoji)
+            english = ""
+            emoji = ""
+        }) {
+            Text("Add")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         LazyColumn {
-            items(viewModel.entries) { item ->
+            items(entries) { item ->
 
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp)
+                        .padding(4.dp)
                 ) {
-
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
+                        modifier = Modifier.padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-
                         Text("${item.english} → ${item.emoji}")
 
-                        Button(
-                            onClick = {
-                                viewModel.deleteEntry(item)
-                            }
-                        ) {
+                        Button(onClick = {
+                            viewModel.deleteEntry(item.id)
+                        }) {
                             Text("Delete")
                         }
                     }
@@ -91,4 +79,4 @@ fun DictionaryScreen(
             }
         }
     }
-}
+} 
